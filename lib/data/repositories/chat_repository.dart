@@ -13,6 +13,7 @@ class ChatRepository {
   final _uuid = const Uuid();
 
   static const int messagePageSize = 50;
+  static const Duration _queryTimeout = Duration(seconds: 20);
 
   String get _userId {
     final id = SupabaseService.currentUser?.id;
@@ -29,8 +30,20 @@ class ChatRepository {
         .map((rows) => rows.map(ChatSession.fromMap).toList());
   }
 
-  /// Loads the most recent page of messages in a session. Pass [before] to
-  /// load an older page (infinite scroll) instead of re-fetching everything.
+  // чтобы при запуске приложения открывался последний чат, а не пустой экран
+  Future<ChatSession?> fetchMostRecentSession() async {
+    final rows = await SupabaseService.client
+        .from(AppConstants.chatSessionsTable)
+        .select()
+        .eq('user_id', _userId)
+        .order('last_message_at', ascending: false)
+        .limit(1)
+        .timeout(_queryTimeout);
+    if (rows.isEmpty) return null;
+    return ChatSession.fromMap(rows.first);
+  }
+
+  // грузит последнюю страницу сообщений; передайте before для более старой страницы
   Future<List<ChatMessage>> fetchMessages(
     String sessionId, {
     DateTime? before,
@@ -46,13 +59,31 @@ class ChatRepository {
 
     final rows = await query
         .order('created_at', ascending: false)
-        .limit(messagePageSize);
+        .limit(messagePageSize)
+        .timeout(_queryTimeout);
 
     return (rows as List)
         .map((row) => ChatMessage.fromMap(row as Map<String, dynamic>))
         .toList()
         .reversed
         .toList();
+  }
+
+  // chat_messages удалятся каскадом (FK on delete cascade из миграции 0003)
+  Future<void> deleteSession(String sessionId) async {
+    await SupabaseService.client
+        .from(AppConstants.chatSessionsTable)
+        .delete()
+        .eq('id', sessionId)
+        .timeout(_queryTimeout);
+  }
+
+  Future<void> renameSession(String sessionId, String newTitle) async {
+    await SupabaseService.client
+        .from(AppConstants.chatSessionsTable)
+        .update({'title': newTitle})
+        .eq('id', sessionId)
+        .timeout(_queryTimeout);
   }
 
   Stream<ChatMessage> watchNewMessages(String sessionId) {
@@ -71,7 +102,8 @@ class ChatRepository {
     final path = '$_userId/${_uuid.v4()}.jpg';
     await SupabaseService.client.storage
         .from(AppConstants.sourcePhotosBucket)
-        .upload(path, photo);
+        .upload(path, photo)
+        .timeout(_queryTimeout);
     return SupabaseService.client.storage
         .from(AppConstants.sourcePhotosBucket)
         .getPublicUrl(path);
@@ -87,23 +119,20 @@ class ChatRepository {
         .from(AppConstants.chatSessionsTable)
         .insert({'user_id': _userId, 'title': title})
         .select()
-        .single();
+        .single()
+        .timeout(_queryTimeout);
     return ChatSession.fromMap(row);
   }
 
-  /// Sends a photo + prompt. If [sessionId] is null this is the first
-  /// message of a new conversation, so a `chat_sessions` row is created
-  /// right here — a session never appears in the sessions list before the
-  /// user has actually written something in it.
-  ///
-  /// Returns the session id the message was sent into.
-  Future<String> sendGenerationRequest({
+  // сохраняет сообщение пользователя и сразу возвращает его — не ждёт ответа ИИ,
+  // поэтому свою же реплику видно в чате мгновенно, а не через realtime-подписку
+  Future<({String sessionId, ChatMessage message, String sourcePhotoUrl})>
+      sendUserMessage({
     required File photo,
     required String promptText,
     String? sessionId,
   }) async {
-    final session =
-        sessionId ?? (await _createSession(promptText)).id;
+    final session = sessionId ?? (await _createSession(promptText)).id;
     final photoUrl = await uploadSourcePhoto(photo);
 
     final messageRow = await SupabaseService.client
@@ -117,23 +146,41 @@ class ChatRepository {
           'image_url': photoUrl,
         })
         .select()
-        .single();
+        .single()
+        .timeout(_queryTimeout);
 
-    await SupabaseService.client.from(AppConstants.generationRequestsTable).insert({
-      'user_id': _userId,
-      'message_id': messageRow['id'],
-      'prompt_text': promptText,
-      'source_photo_url': photoUrl,
-      'status': 'pending',
-    });
+    await SupabaseService.client
+        .from(AppConstants.generationRequestsTable)
+        .insert({
+          'user_id': _userId,
+          'message_id': messageRow['id'],
+          'prompt_text': promptText,
+          'source_photo_url': photoUrl,
+          'status': 'pending',
+        })
+        .timeout(_queryTimeout);
 
-    await _aiGenerationService.requestGeneration(
-      sourcePhotoUrl: photoUrl,
-      promptText: promptText,
-      messageId: messageRow['id'] as String,
+    return (
       sessionId: session,
+      message: ChatMessage.fromMap(messageRow),
+      sourcePhotoUrl: photoUrl,
     );
+  }
 
-    return session;
+  // отдельно от sendUserMessage — сама генерация может идти долго (Replicate)
+  Future<void> requestGeneration({
+    required String sourcePhotoUrl,
+    required String promptText,
+    required String messageId,
+    required String sessionId,
+    int variantCount = 1,
+  }) {
+    return _aiGenerationService.requestGeneration(
+      sourcePhotoUrl: sourcePhotoUrl,
+      promptText: promptText,
+      messageId: messageId,
+      sessionId: sessionId,
+      variantCount: variantCount,
+    );
   }
 }

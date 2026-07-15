@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-/// Grid of generated hairstyle/beard variants attached to an assistant
-/// message.
+import '../../../shared_widgets/shimmer_box.dart';
+import 'fullscreen_image_gallery.dart';
+
+// сетка сгенерированных вариантов причёски/бороды в ответе ассистента
 class ImageResultGrid extends StatelessWidget {
   final List<String> imageUrls;
 
@@ -23,12 +25,15 @@ class ImageResultGrid extends StatelessWidget {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: GestureDetector(
-            onTap: () => _openFullscreen(context, imageUrls[index]),
+            onTap: () => _openFullscreen(context, index),
             child: CachedNetworkImage(
               imageUrl: imageUrls[index],
               fit: BoxFit.cover,
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
+              placeholder: (context, url) => const ShimmerBox(
+                width: double.infinity,
+                height: double.infinity,
+                borderRadius: BorderRadius.zero,
+              ),
               errorWidget: (context, url, error) =>
                   const Icon(Icons.broken_image_outlined),
             ),
@@ -38,14 +43,10 @@ class ImageResultGrid extends StatelessWidget {
     );
   }
 
-  void _openFullscreen(BuildContext context, String url) {
+  void _openFullscreen(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(backgroundColor: Colors.black),
-          body: Center(child: InteractiveViewer(child: Image.network(url))),
-        ),
+        builder: (_) => FullscreenImageGallery(imageUrls: imageUrls, initialIndex: index),
       ),
     );
   }

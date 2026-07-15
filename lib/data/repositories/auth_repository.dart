@@ -13,9 +13,7 @@ class AuthRepository {
 
   User? get currentUser => SupabaseService.currentUser;
 
-  /// Returns true if sign-up produced an active session (email confirmation
-  /// disabled in the Supabase project), false if the user still needs to
-  /// confirm their email before they can sign in.
+  // true — если сессия уже активна (подтверждение почты выключено в проекте)
   Future<bool> signUpWithEmail({
     required String email,
     required String password,

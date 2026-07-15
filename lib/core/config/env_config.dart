@@ -1,9 +1,4 @@
-/// Reads runtime configuration passed via `--dart-define` at build/run time.
-///
-/// Example:
-/// flutter run \
-///   --dart-define=SUPABASE_URL=https://xxxx.supabase.co \
-///   --dart-define=SUPABASE_ANON_KEY=eyJ...
+// ключи задаются через --dart-define, см. .env.example
 class EnvConfig {
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const String supabaseAnonKey = String.fromEnvironment(
@@ -16,8 +11,8 @@ class EnvConfig {
   static void assertConfigured() {
     assert(
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty,
-      'Missing SUPABASE_URL / SUPABASE_ANON_KEY. Pass them via --dart-define, '
-      'see .env.example for the full list.',
+      'Не заданы SUPABASE_URL / SUPABASE_ANON_KEY. Передайте через --dart-define, '
+      'см. .env.example.',
     );
   }
 }

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/utils/error_translator.dart';
 import 'features/auth/controllers/auth_controller.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/chat/screens/chat_screen.dart';
 import 'features/consent/controllers/consent_controller.dart';
 import 'features/consent/screens/photo_consent_screen.dart';
+import 'features/generation_settings/screens/generation_settings_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/settings/controllers/theme_controller.dart';
 import 'features/settings/screens/settings_screen.dart';
@@ -33,14 +35,13 @@ class HairstyleAiApp extends ConsumerWidget {
         AppRoutes.paywall: (_) => const PaywallScreen(),
         AppRoutes.profile: (_) => const ProfileScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
+        AppRoutes.generationSettings: (_) => const GenerationSettingsScreen(),
       },
     );
   }
 }
 
-/// Decides which top-level screen to show:
-/// not signed in -> Login, signed in without consent -> PhotoConsent,
-/// otherwise -> Chat.
+// не вошёл — логин, вошёл без согласия — экран согласия, иначе — чат
 class RootGate extends ConsumerWidget {
   const RootGate({super.key});
 
@@ -58,8 +59,10 @@ class RootGate extends ConsumerWidget {
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, _) => Scaffold(
-        body: Center(child: Text('Ошибка: $error')),
+      error: (error, stackTrace) => Scaffold(
+        body: Center(
+          child: Text(friendlyErrorMessage(error, context: 'consent', stackTrace: stackTrace)),
+        ),
       ),
     );
   }

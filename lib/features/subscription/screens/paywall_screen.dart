@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/error_translator.dart';
 import '../../../data/models/subscription.dart';
 import '../controllers/subscription_controller.dart';
 import '../widgets/plan_card.dart';
@@ -69,7 +70,9 @@ class PaywallScreen extends ConsumerWidget {
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Ошибка: $error')),
+        error: (error, stackTrace) => Center(
+          child: Text(friendlyErrorMessage(error, context: 'paywall', stackTrace: stackTrace)),
+        ),
       ),
     );
   }

@@ -2,8 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/env_config.dart';
 
-/// Thin wrapper around the Supabase client singleton so the rest of the app
-/// never touches `Supabase.instance` directly.
+// обёртка над клиентом Supabase, чтобы остальной код не лез в Supabase.instance напрямую
 class SupabaseService {
   SupabaseService._();
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Placeholder avatar until real profile photos are supported. Shows the
-/// first letter of the email (or a generic icon if no email is available).
+// заглушка вместо аватарки: первая буква email или просто иконка
 class AvatarPlaceholder extends StatelessWidget {
   final String? email;
   final double radius;

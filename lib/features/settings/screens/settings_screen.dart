@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/error_translator.dart';
 import '../controllers/theme_controller.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -42,7 +43,9 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Ошибка: $error')),
+        error: (error, stackTrace) => Center(
+          child: Text(friendlyErrorMessage(error, context: 'theme_settings', stackTrace: stackTrace)),
+        ),
       ),
     );
   }

@@ -6,4 +6,5 @@ class AppRoutes {
   static const String paywall = '/paywall';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String generationSettings = '/generation-settings';
 }

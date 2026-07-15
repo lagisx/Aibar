@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/error_translator.dart';
 import '../../auth/controllers/auth_controller.dart';
+import '../../chat/controllers/chat_controller.dart';
+import '../../consent/controllers/consent_controller.dart';
+import '../../generation_settings/controllers/generation_settings_controller.dart';
 import '../../subscription/controllers/subscription_controller.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -29,11 +33,20 @@ class ProfileScreen extends ConsumerWidget {
               subtitle: Text(subscription.tier.name.toUpperCase()),
             ),
             loading: () => const ListTile(title: Text('Загрузка тарифа...')),
-            error: (e, _) => ListTile(title: Text('Ошибка: $e')),
+            error: (e, stackTrace) => ListTile(
+              title: Text(friendlyErrorMessage(e, context: 'profile', stackTrace: stackTrace)),
+            ),
           ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
-            onPressed: () => ref.read(authRepositoryProvider).signOut(),
+            onPressed: () async {
+              await ref.read(authRepositoryProvider).signOut();
+              ref.invalidate(chatControllerProvider);
+              ref.invalidate(chatSessionsProvider);
+              ref.invalidate(subscriptionControllerProvider);
+              ref.invalidate(consentControllerProvider);
+              ref.invalidate(generationSettingsControllerProvider);
+            },
             icon: const Icon(Icons.logout),
             label: const Text('Выйти'),
           ),

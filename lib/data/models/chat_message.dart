@@ -58,9 +58,7 @@ class ChatMessage {
     final type = _typeFromString(map['type'] as String);
     final content = map['content'] as String?;
 
-    // For assistant `image_result` messages the Edge Function stores the
-    // generated image URLs as a JSON array in `content` (chat_messages has
-    // no array column, unlike generation_requests.result_urls).
+    // ссылки на картинки лежат в content как JSON-массив (своей колонки под них нет)
     List<String> resultUrls = const [];
     if (type == MessageType.imageResult && content != null) {
       try {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'supabase_service.dart';
 import '../../core/config/app_constants.dart';
 
@@ -9,27 +11,31 @@ class GenerationLimitExceededException implements Exception {
   String toString() => message;
 }
 
-/// Calls the `generate-hairstyle` Supabase Edge Function.
-///
-/// All AI provider calls (Replicate / Fal.ai) happen server-side inside the
-/// Edge Function - the client never sees the provider API key.
+// дёргает generate-hairstyle на сервере, ключ AI-провайдера сюда не попадает
 class AiGenerationService {
+  // генерация на стороне Replicate может идти долго, поэтому таймаут щедрый
+  static const Duration _generationTimeout = Duration(minutes: 3);
+
   Future<void> requestGeneration({
     required String sourcePhotoUrl,
     required String promptText,
     required String messageId,
     required String sessionId,
+    int variantCount = 1,
   }) async {
     try {
-      final response = await SupabaseService.client.functions.invoke(
-        AppConstants.generateHairstyleFunction,
-        body: {
-          'source_photo_url': sourcePhotoUrl,
-          'prompt_text': promptText,
-          'message_id': messageId,
-          'session_id': sessionId,
-        },
-      );
+      final response = await SupabaseService.client.functions
+          .invoke(
+            AppConstants.generateHairstyleFunction,
+            body: {
+              'source_photo_url': sourcePhotoUrl,
+              'prompt_text': promptText,
+              'message_id': messageId,
+              'session_id': sessionId,
+              'variant_count': variantCount,
+            },
+          )
+          .timeout(_generationTimeout);
 
       if (response.status == 429) {
         throw GenerationLimitExceededException(
@@ -46,6 +52,10 @@ class AiGenerationService {
       }
     } on GenerationLimitExceededException {
       rethrow;
+    } on TimeoutException {
+      throw Exception(
+        'Генерация заняла слишком много времени. Попробуйте ещё раз.',
+      );
     } catch (e) {
       throw Exception('Не удалось запустить генерацию: $e');
     }

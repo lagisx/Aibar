@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "hairstyle_ai_app",
+      "request": "launch",
+      "type": "dart",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=https://fxichfunlvsddazvweev.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4aWNoZnVubHZzZGRhenZ3ZWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMzM5MTMsImV4cCI6MjA5OTYwOTkxM30.9dSoIomAkpk50XSaxcjP9zf8Tu7CpyE0gnLv6MxIvkM"
+      ]
+    }
+  ]
+}

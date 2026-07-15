@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/controllers/auth_controller.dart';
+import '../features/chat/controllers/chat_controller.dart';
+import '../features/consent/controllers/consent_controller.dart';
+import '../features/generation_settings/controllers/generation_settings_controller.dart';
 import '../features/settings/screens/terms_screen.dart';
+import '../features/subscription/controllers/subscription_controller.dart';
 import '../routes/app_routes.dart';
 
 Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
@@ -37,6 +41,14 @@ Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.tune),
+            title: const Text('Настройки генерации'),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              Navigator.of(context).pushNamed(AppRoutes.generationSettings);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.more_horiz),
             title: const Text('Прочее'),
             onTap: () {
@@ -48,9 +60,15 @@ Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Выйти'),
-            onTap: () {
+            onTap: () async {
               Navigator.of(sheetContext).pop();
-              ref.read(authRepositoryProvider).signOut();
+              await ref.read(authRepositoryProvider).signOut();
+              // сбрасываем состояние, чтобы следующий вошедший не увидел чужие данные
+              ref.invalidate(chatControllerProvider);
+              ref.invalidate(chatSessionsProvider);
+              ref.invalidate(subscriptionControllerProvider);
+              ref.invalidate(consentControllerProvider);
+              ref.invalidate(generationSettingsControllerProvider);
             },
           ),
         ],

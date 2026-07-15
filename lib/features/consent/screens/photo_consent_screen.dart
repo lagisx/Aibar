@@ -4,9 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared_widgets/primary_button.dart';
 import '../controllers/consent_controller.dart';
 
-/// First-run gate: the user must explicitly agree to have their photo
-/// processed for hairstyle generation before the chat is unlocked. Required
-/// because a face photo is sensitive/biometric-adjacent data.
+// без согласия на обработку фото в чат не пускаем
 class PhotoConsentScreen extends ConsumerStatefulWidget {
   const PhotoConsentScreen({super.key});
 
