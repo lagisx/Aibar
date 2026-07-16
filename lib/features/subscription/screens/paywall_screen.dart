@@ -37,7 +37,7 @@ class PaywallScreen extends ConsumerWidget {
               title: 'Pro',
               price: '299 ₽/мес',
               features: const [
-                '100 запросов в месяц',
+                'Расширенный лимит генераций',
                 'Приоритетная генерация',
                 'HD-качество результата',
               ],
@@ -51,7 +51,7 @@ class PaywallScreen extends ConsumerWidget {
               title: 'Max',
               price: '799 ₽/мес',
               features: const [
-                '1000+ запросов в месяц',
+                'Максимальный лимит генераций',
                 'Максимальный приоритет',
                 'Ранний доступ к новым стилям',
               ],

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/config/app_constants.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/error_translator.dart';
 import '../../../data/models/chat_message.dart';
@@ -224,10 +223,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messagesAsync = ref.watch(chatControllerProvider);
     final subscription = ref.watch(subscriptionControllerProvider).valueOrNull;
     final isPro = subscription?.tier != SubscriptionTier.free;
-    final hasReachedLimit =
-        subscription != null &&
-        subscription.requestsUsedThisPeriod >=
-            (AppConstants.tierRequestLimits[subscription.tier.name] ?? 0);
+    final hasReachedLimit = subscription != null && subscription.hasReachedLimit;
 
     return Scaffold(
       drawer: const AppDrawer(),

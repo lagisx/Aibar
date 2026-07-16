@@ -16,16 +16,37 @@ class SubscriptionRepository {
         .eq('user_id', _userId)
         .maybeSingle();
 
+    final tier = row == null
+        ? SubscriptionTier.free
+        : subscriptionTierFromString(row['tier'] as String);
+    final limit = await _fetchTierLimit(tier);
+
     if (row == null) {
       return Subscription(
         userId: _userId,
         tier: SubscriptionTier.free,
         requestsUsedThisPeriod: 0,
+        requestLimit: limit,
         periodResetAt: DateTime.now().add(const Duration(days: 30)),
         status: 'active',
       );
     }
-    return Subscription.fromMap(row);
+    return Subscription.fromMap(row, requestLimit: limit);
+  }
+
+  Future<int> _fetchTierLimit(SubscriptionTier tier) async {
+    try {
+      final row = await SupabaseService.client
+          .from(AppConstants.subscriptionTiersTable)
+          .select('request_limit')
+          .eq('tier', tier.name)
+          .maybeSingle();
+
+      final limit = row?['request_limit'] as int?;
+      if (limit != null) return limit;
+    } catch (_) {
+    }
+    return AppConstants.fallbackTierRequestLimits[tier.name] ?? 0;
   }
 
   Future<void> mockUpgrade(SubscriptionTier tier) async {
@@ -36,7 +57,6 @@ class SubscriptionRepository {
   }
 
   bool hasReachedLimit(Subscription subscription) {
-    final limit = AppConstants.tierRequestLimits[subscription.tier.name] ?? 0;
-    return subscription.requestsUsedThisPeriod >= limit;
+    return subscription.hasReachedLimit;
   }
 }

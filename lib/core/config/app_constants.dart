@@ -4,6 +4,7 @@ class AppConstants {
   static const String generationRequestsTable = 'generation_requests';
   static const String generationSettingsTable = 'generation_settings';
   static const String subscriptionsTable = 'subscriptions';
+  static const String subscriptionTiersTable = 'subscription_tiers';
   static const String profilesTable = 'profiles';
   static const String favoritePhotosTable = 'favorite_photos';
   static const String bugReportsTable = 'bug_reports';
@@ -14,9 +15,9 @@ class AppConstants {
   static const String cancelGenerationFunction = 'cancel-generation';
   static const String deleteAccountFunction = 'delete-account';
 
-  static const Map<String, int> tierRequestLimits = {
+  static const Map<String, int> fallbackTierRequestLimits = {
     'free': 3,
-    'pro': 3,
+    'pro': 100,
     'max': 1000,
   };
 

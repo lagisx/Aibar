@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/config/app_constants.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/error_translator.dart';
 import '../../../data/models/subscription.dart';
@@ -163,7 +162,8 @@ class ProfileScreen extends ConsumerWidget {
                   onTap: () =>
                       Navigator.of(context).pushNamed(AppRoutes.paywall),
                 ),
-                _RequestsRemainingTile(subscription: subscription),
+                if (subscription.tier != SubscriptionTier.free)
+                  _RequestsRemainingTile(subscription: subscription),
               ],
             ),
             loading: () => const ListTile(title: Text('Загрузка тарифа...')),
@@ -301,7 +301,6 @@ class _RequestsRemainingTileState
   @override
   void initState() {
     super.initState();
-    // Пересчитываем текст обратного отсчёта раз в минуту, без похода в сеть.
     _ticker = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -376,8 +375,7 @@ class _RequestsRemainingTileState
   @override
   Widget build(BuildContext context) {
     final subscription = widget.subscription;
-    final limit =
-        AppConstants.tierRequestLimits[subscription.tier.name] ?? 1;
+    final limit = subscription.requestLimit.clamp(1, 1 << 30);
     final used = subscription.requestsUsedThisPeriod.clamp(0, limit);
     final percent = (used / limit * 100).round();
     final colors = Theme.of(context).colorScheme;
