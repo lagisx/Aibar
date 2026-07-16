@@ -58,7 +58,6 @@ class ChatMessage {
     final type = _typeFromString(map['type'] as String);
     final content = map['content'] as String?;
 
-    // ссылки на картинки лежат в content как JSON-массив (своей колонки под них нет)
     List<String> resultUrls = const [];
     if (type == MessageType.imageResult && content != null) {
       try {
@@ -77,7 +76,7 @@ class ChatMessage {
       content: type == MessageType.imageResult ? null : content,
       imageUrl: map['image_url'] as String?,
       resultUrls: resultUrls,
-      createdAt: DateTime.parse(map['created_at'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String).toLocal(),
     );
   }
 }

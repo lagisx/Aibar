@@ -28,7 +28,6 @@ class SubscriptionRepository {
     return Subscription.fromMap(row);
   }
 
-  /// Mock "checkout": just flips the tier in the DB, no real payment.
   Future<void> mockUpgrade(SubscriptionTier tier) async {
     await SupabaseService.client.from(AppConstants.subscriptionsTable).upsert({
       'user_id': _userId,

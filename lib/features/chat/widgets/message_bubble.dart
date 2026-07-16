@@ -9,8 +9,19 @@ import 'image_result_grid.dart';
 
 class MessageBubble extends StatelessWidget {
   final ChatMessage message;
+  final String? sourcePhotoUrl;
+  final bool isPro;
+  final VoidCallback? onRegenerate;
+  final bool isRegenerating;
 
-  const MessageBubble({super.key, required this.message});
+  const MessageBubble({
+    super.key,
+    required this.message,
+    this.sourcePhotoUrl,
+    this.isPro = false,
+    this.onRegenerate,
+    this.isRegenerating = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +29,6 @@ class MessageBubble extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // асимметричный "хвостик" — как в большинстве мессенджеров
     final radius = BorderRadius.only(
       topLeft: const Radius.circular(AppRadius.lg),
       topRight: const Radius.circular(AppRadius.lg),
@@ -29,7 +39,9 @@ class MessageBubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
-        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Container(
             margin: const EdgeInsets.symmetric(
@@ -41,7 +53,9 @@ class MessageBubble extends StatelessWidget {
               maxWidth: MediaQuery.of(context).size.width * 0.78,
             ),
             decoration: BoxDecoration(
-              color: isUser ? colors.primaryContainer : colors.surfaceContainerHigh,
+              color: isUser
+                  ? colors.primaryContainer
+                  : colors.surfaceContainerHigh,
               borderRadius: radius,
               boxShadow: [
                 BoxShadow(
@@ -61,15 +75,17 @@ class MessageBubble extends StatelessWidget {
                       imageUrl: message.imageUrl!,
                       width: 200,
                       height: 200,
+                      memCacheWidth: 400,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const ShimmerBox(
                         width: 200,
                         height: 200,
-                        borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(AppRadius.md),
+                        ),
                       ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.broken_image_outlined,
-                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.broken_image_outlined),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -78,13 +94,39 @@ class MessageBubble extends StatelessWidget {
                   Text(
                     message.content!,
                     style: textTheme.bodyMedium?.copyWith(
-                      color: isUser ? colors.onPrimaryContainer : colors.onSurface,
+                      color: isUser
+                          ? colors.onPrimaryContainer
+                          : colors.onSurface,
                     ),
                   ),
                 if (message.type == MessageType.imageResult &&
                     message.resultUrls.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
-                  ImageResultGrid(imageUrls: message.resultUrls),
+                  ImageResultGrid(
+                    imageUrls: message.resultUrls,
+                    sourcePhotoUrl: sourcePhotoUrl,
+                    isPro: isPro,
+                  ),
+                  if (onRegenerate != null) ...[
+                    const SizedBox(height: AppSpacing.xs),
+                    TextButton.icon(
+                      onPressed: isRegenerating ? null : onRegenerate,
+                      icon: isRegenerating
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh, size: 16),
+                      label: Text(isRegenerating ? 'Генерирую…' : 'Повторить'),
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),

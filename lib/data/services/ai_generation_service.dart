@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'supabase_service.dart';
 import '../../core/config/app_constants.dart';
+import '../models/generation_settings.dart';
 
 class GenerationLimitExceededException implements Exception {
   final String message;
@@ -11,9 +12,7 @@ class GenerationLimitExceededException implements Exception {
   String toString() => message;
 }
 
-// дёргает generate-hairstyle на сервере, ключ AI-провайдера сюда не попадает
 class AiGenerationService {
-  // генерация на стороне Replicate может идти долго, поэтому таймаут щедрый
   static const Duration _generationTimeout = Duration(minutes: 3);
 
   Future<void> requestGeneration({
@@ -22,6 +21,7 @@ class AiGenerationService {
     required String messageId,
     required String sessionId,
     int variantCount = 1,
+    GenerationSettings? settings,
   }) async {
     try {
       final response = await SupabaseService.client.functions
@@ -33,6 +33,7 @@ class AiGenerationService {
               'message_id': messageId,
               'session_id': sessionId,
               'variant_count': variantCount,
+              'settings': (settings ?? const GenerationSettings()).toMap(),
             },
           )
           .timeout(_generationTimeout);
@@ -59,5 +60,12 @@ class AiGenerationService {
     } catch (e) {
       throw Exception('Не удалось запустить генерацию: $e');
     }
+  }
+
+  Future<void> cancelGeneration(String messageId) async {
+    await SupabaseService.client.functions.invoke(
+      AppConstants.cancelGenerationFunction,
+      body: {'message_id': messageId},
+    );
   }
 }

@@ -22,9 +22,9 @@ class PaywallScreen extends ConsumerWidget {
             PlanCard(
               tier: SubscriptionTier.free,
               title: 'Free',
-              price: '0 ₽',
+              price: '0 ₽/мес',
               features: const [
-                '3 запроса на генерацию',
+                'Ограниченное количество генераций',
                 'Базовое качество результата',
               ],
               isCurrent: subscription.tier == SubscriptionTier.free,
@@ -51,7 +51,7 @@ class PaywallScreen extends ConsumerWidget {
               title: 'Max',
               price: '799 ₽/мес',
               features: const [
-                '1000 запросов в месяц',
+                '1000+ запросов в месяц',
                 'Максимальный приоритет',
                 'Ранний доступ к новым стилям',
               ],
@@ -71,7 +71,13 @@ class PaywallScreen extends ConsumerWidget {
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
-          child: Text(friendlyErrorMessage(error, context: 'paywall', stackTrace: stackTrace)),
+          child: Text(
+            friendlyErrorMessage(
+              error,
+              context: 'paywall',
+              stackTrace: stackTrace,
+            ),
+          ),
         ),
       ),
     );

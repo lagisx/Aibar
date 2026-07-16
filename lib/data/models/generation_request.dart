@@ -39,7 +39,7 @@ class GenerationRequest {
           (map['result_urls'] as List?)?.map((e) => e as String).toList() ??
           const [],
       status: _statusFromString(map['status'] as String),
-      createdAt: DateTime.parse(map['created_at'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String).toLocal(),
     );
   }
 }

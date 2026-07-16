@@ -2,7 +2,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/env_config.dart';
 
-// обёртка над клиентом Supabase, чтобы остальной код не лез в Supabase.instance напрямую
 class SupabaseService {
   SupabaseService._();
 

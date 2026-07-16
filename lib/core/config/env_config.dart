@@ -1,4 +1,3 @@
-// ключи задаются через --dart-define, см. .env.example
 class EnvConfig {
   static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   static const String supabaseAnonKey = String.fromEnvironment(

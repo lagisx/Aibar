@@ -20,9 +20,8 @@ class GenerationSettingsRepository {
   }
 
   Future<void> save(GenerationSettings settings) async {
-    await SupabaseService.client.from(AppConstants.generationSettingsTable).upsert({
-      'user_id': _userId,
-      ...settings.toMap(),
-    });
+    await SupabaseService.client
+        .from(AppConstants.generationSettingsTable)
+        .upsert({'user_id': _userId, ...settings.toMap()});
   }
 }

@@ -27,7 +27,7 @@ class Subscription {
       userId: map['user_id'] as String,
       tier: subscriptionTierFromString(map['tier'] as String),
       requestsUsedThisPeriod: map['requests_used_this_period'] as int? ?? 0,
-      periodResetAt: DateTime.parse(map['period_reset_at'] as String),
+      periodResetAt: DateTime.parse(map['period_reset_at'] as String).toLocal(),
       status: map['status'] as String? ?? 'active',
     );
   }

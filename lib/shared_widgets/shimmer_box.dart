@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// серый пульсирующий прямоугольник-заглушка, пока грузится реальный контент
 class ShimmerBox extends StatefulWidget {
   final double? width;
   final double height;

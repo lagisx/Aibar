@@ -5,19 +5,22 @@ class AppConstants {
   static const String generationSettingsTable = 'generation_settings';
   static const String subscriptionsTable = 'subscriptions';
   static const String profilesTable = 'profiles';
+  static const String favoritePhotosTable = 'favorite_photos';
+  static const String bugReportsTable = 'bug_reports';
 
   static const String sourcePhotosBucket = 'source-photos';
 
   static const String generateHairstyleFunction = 'generate-hairstyle';
+  static const String cancelGenerationFunction = 'cancel-generation';
+  static const String deleteAccountFunction = 'delete-account';
 
-  // лимиты дублируются в Edge Function, менять в обоих местах
   static const Map<String, int> tierRequestLimits = {
     'free': 3,
     'pro': 100,
     'max': 1000,
   };
 
-  static const String photoConsentPrefsKey = 'photo_consent_accepted_v1';
+  static const String variantCountPrefsKey = 'variant_count_v1';
 
   static const String themeModePrefsKey = 'theme_mode_v1';
 }

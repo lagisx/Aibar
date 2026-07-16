@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// заглушка вместо аватарки: первая буква email или просто иконка
 class AvatarPlaceholder extends StatelessWidget {
   final String? email;
   final double radius;

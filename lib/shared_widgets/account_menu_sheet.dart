@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/controllers/auth_controller.dart';
-import '../features/chat/controllers/chat_controller.dart';
-import '../features/consent/controllers/consent_controller.dart';
-import '../features/generation_settings/controllers/generation_settings_controller.dart';
+import '../features/settings/screens/bug_report_screen.dart';
 import '../features/settings/screens/terms_screen.dart';
-import '../features/subscription/controllers/subscription_controller.dart';
 import '../routes/app_routes.dart';
 
 Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
@@ -18,7 +15,7 @@ Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
         children: [
           ListTile(
             leading: const Icon(Icons.person_outline),
-            title: const Text('Профиль'),
+            title: const Text('Профиль и настройки'),
             onTap: () {
               Navigator.of(sheetContext).pop();
               Navigator.of(context).pushNamed(AppRoutes.profile);
@@ -30,14 +27,6 @@ Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
             onTap: () {
               Navigator.of(sheetContext).pop();
               Navigator.of(context).pushNamed(AppRoutes.paywall);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text('Настройки'),
-            onTap: () {
-              Navigator.of(sheetContext).pop();
-              Navigator.of(context).pushNamed(AppRoutes.settings);
             },
           ),
           ListTile(
@@ -62,13 +51,10 @@ Future<void> showAccountMenu(BuildContext context, WidgetRef ref) {
             title: const Text('Выйти'),
             onTap: () async {
               Navigator.of(sheetContext).pop();
-              await ref.read(authRepositoryProvider).signOut();
-              // сбрасываем состояние, чтобы следующий вошедший не увидел чужие данные
-              ref.invalidate(chatControllerProvider);
-              ref.invalidate(chatSessionsProvider);
-              ref.invalidate(subscriptionControllerProvider);
-              ref.invalidate(consentControllerProvider);
-              ref.invalidate(generationSettingsControllerProvider);
+              try {
+                await ref.read(authRepositoryProvider).signOut();
+              } catch (_) {
+              }
             },
           ),
         ],
@@ -89,8 +75,18 @@ void _showMoreMenu(BuildContext context) {
             title: const Text('Условия использования'),
             onTap: () {
               Navigator.of(sheetContext).pop();
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const TermsScreen()));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined),
+            title: const Text('Сообщить об ошибке'),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TermsScreen()),
+                MaterialPageRoute(builder: (_) => const BugReportScreen()),
               );
             },
           ),

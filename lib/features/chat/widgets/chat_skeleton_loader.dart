@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../shared_widgets/shimmer_box.dart';
 
-// заглушки вместо сообщений, пока грузится история чата
 class ChatSkeletonLoader extends StatelessWidget {
   const ChatSkeletonLoader({super.key});
 
@@ -20,7 +19,6 @@ class ChatSkeletonLoader extends StatelessWidget {
   }
 }
 
-// такая же заглушка одной строкой — показываем внизу списка, пока ждём ответ ИИ
 class GeneratingBubble extends StatelessWidget {
   const GeneratingBubble({super.key});
 
@@ -33,7 +31,11 @@ class GeneratingBubble extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ShimmerBox(width: 90, height: 20, borderRadius: BorderRadius.all(Radius.circular(10))),
+            const ShimmerBox(
+              width: 90,
+              height: 20,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
             const SizedBox(width: 8),
             Text(
               'Генерирую варианты…',

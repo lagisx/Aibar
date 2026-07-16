@@ -16,125 +16,166 @@ Future<void> showStylePresetsSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setSheetState) {
-        void handleToggle(StylePreset preset) {
-          final alreadySelected = selectedIds.contains(preset.id);
-          if (!alreadySelected) {
-            if (selectedIds.length >= maxSelectedStyles) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Можно выбрать не больше $maxSelectedStyles стилей')),
-              );
-              return;
-            }
-            final conflicting = preset.conflictGroup == null
-                ? const <StylePreset>[]
-                : stylePresets
-                    .where((p) => selectedIds.contains(p.id) && p.conflictGroup == preset.conflictGroup)
-                    .toList();
-            final conflict = conflicting.isEmpty ? null : conflicting.first;
-            if (conflict != null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Нельзя сочетать «${conflict.title}» и «${preset.title}»')),
-              );
-              return;
-            }
-          }
-          onToggle(preset);
-          setSheetState(() {});
-        }
+    builder: (sheetContext) {
+      var localVariantCount = variantCount;
 
-        return DraggableScrollableSheet(
-          initialChildSize: 0.75,
-          minChildSize: 0.4,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (context, scrollController) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text('Готовые стили', style: Theme.of(context).textTheme.titleLarge),
+      return StatefulBuilder(
+        builder: (context, setSheetState) {
+          void handleToggle(StylePreset preset) {
+            final alreadySelected = selectedIds.contains(preset.id);
+            if (!alreadySelected) {
+              if (selectedIds.length >= maxSelectedStyles) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Можно выбрать не больше $maxSelectedStyles стилей',
                     ),
-                    TextButton(
-                      onPressed: () => Navigator.of(sheetContext).pop(),
-                      child: const Text('Готово'),
+                  ),
+                );
+                return;
+              }
+              final conflicting = preset.conflictGroup == null
+                  ? const <StylePreset>[]
+                  : stylePresets
+                        .where(
+                          (p) =>
+                              selectedIds.contains(p.id) &&
+                              p.conflictGroup == preset.conflictGroup,
+                        )
+                        .toList();
+              final conflict = conflicting.isEmpty ? null : conflicting.first;
+              if (conflict != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Нельзя сочетать «${conflict.title}» и «${preset.title}»',
                     ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Text(
-                  'Выберите до $maxSelectedStyles сочетаемых стилей — они добавятся к вашему запросу',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              _VariantCountSelector(
-                value: variantCount,
-                onChanged: onVariantCountChanged,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Expanded(
-                child: GridView.builder(
-                  controller: scrollController,
+                  ),
+                );
+                return;
+              }
+            }
+            onToggle(preset);
+            setSheetState(() {});
+          }
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.75,
+            minChildSize: 0.4,
+            maxChildSize: 0.95,
+            expand: false,
+            builder: (context, scrollController) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.lg,
-                    0,
                     AppSpacing.lg,
-                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    0,
                   ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: AppSpacing.md,
-                    crossAxisSpacing: AppSpacing.md,
-                    childAspectRatio: 0.95,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Готовые стили',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(sheetContext).pop(),
+                        child: const Text('Готово'),
+                      ),
+                    ],
                   ),
-                  itemCount: stylePresets.length,
-                  itemBuilder: (context, index) {
-                    final preset = stylePresets[index];
-                    return _StylePresetCard(
-                      preset: preset,
-                      selected: selectedIds.contains(preset.id),
-                      onTap: () => handleToggle(preset),
-                    );
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
+                  child: Text(
+                    'Выберите до $maxSelectedStyles сочетаемых стилей — они добавятся к вашему запросу',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _ImageCountSelector(
+                  value: localVariantCount,
+                  onChanged: (count) {
+                    setSheetState(() => localVariantCount = count);
+                    onVariantCountChanged(count);
                   },
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
+                const SizedBox(height: AppSpacing.sm),
+                Expanded(
+                  child: GridView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      0,
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: AppSpacing.md,
+                          crossAxisSpacing: AppSpacing.md,
+                          childAspectRatio: 0.95,
+                        ),
+                    itemCount: stylePresets.length,
+                    itemBuilder: (context, index) {
+                      final preset = stylePresets[index];
+                      return _StylePresetCard(
+                        preset: preset,
+                        selected: selectedIds.contains(preset.id),
+                        onTap: () => handleToggle(preset),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
   );
 }
 
-class _VariantCountSelector extends StatelessWidget {
+class _ImageCountSelector extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
 
-  const _VariantCountSelector({required this.value, required this.onChanged});
+  const _ImageCountSelector({required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Вариантов:', style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(width: AppSpacing.md),
-          SegmentedButton<int>(
-            segments: const [
-              ButtonSegment(value: 1, label: Text('1')),
-              ButtonSegment(value: 2, label: Text('2')),
-              ButtonSegment(value: 3, label: Text('3')),
+          Text(
+            'Количество изображений',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<int>(
+                  showSelectedIcon: false,
+                  segments: const [
+                    ButtonSegment(value: 1, label: Text('1')),
+                    ButtonSegment(value: 2, label: Text('2')),
+                    ButtonSegment(value: 3, label: Text('3')),
+                  ],
+                  selected: {value},
+                  onSelectionChanged: (selection) => onChanged(selection.first),
+                ),
+              ),
             ],
-            selected: {value},
-            onSelectionChanged: (selection) => onChanged(selection.first),
           ),
         ],
       ),

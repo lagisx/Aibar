@@ -12,6 +12,7 @@ class PromptInputBar extends StatefulWidget {
   final VoidCallback onOpenStylePresets;
   final ValueChanged<String> onSend;
   final bool sending;
+  final VoidCallback? onCancel;
 
   const PromptInputBar({
     super.key,
@@ -21,6 +22,7 @@ class PromptInputBar extends StatefulWidget {
     required this.onOpenStylePresets,
     required this.onSend,
     required this.sending,
+    this.onCancel,
   });
 
   @override
@@ -29,6 +31,16 @@ class PromptInputBar extends StatefulWidget {
 
 class PromptInputBarState extends State<PromptInputBar> {
   final _controller = TextEditingController();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      final hasText = _controller.text.trim().isNotEmpty;
+      if (hasText != _hasText) setState(() => _hasText = hasText);
+    });
+  }
 
   @override
   void dispose() {
@@ -58,102 +70,254 @@ class PromptInputBarState extends State<PromptInputBar> {
           AppSpacing.md,
           AppSpacing.xs,
           AppSpacing.md,
-          AppSpacing.sm,
+          AppSpacing.xs,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (widget.attachedPhoto != null)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: AppSpacing.sm),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        child: Image.file(
-                          widget.attachedPhoto!,
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        top: -8,
-                        right: -8,
-                        child: GestureDetector(
-                          onTap: widget.onRemovePhoto,
-                          child: CircleAvatar(
-                            radius: 11,
-                            backgroundColor: colors.surface,
-                            child: Icon(Icons.close, size: 14, color: colors.onSurface),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              _AttachedPhotoPreview(
+                photo: widget.attachedPhoto!,
+                onRemove: widget.onRemovePhoto,
               ),
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.pill),
+              borderRadius: BorderRadius.circular(28),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: colors.surfaceContainerHigh.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    color: colors.surfaceContainerHigh.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: colors.outlineVariant.withValues(alpha: 0.4),
+                      color: colors.outlineVariant.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.add_a_photo_outlined),
+                      _BarIconButton(
+                        icon: Icons.add_rounded,
                         tooltip: 'Прикрепить фото',
-                        onPressed: widget.sending ? null : widget.onAttachPhoto,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.style_outlined),
-                        tooltip: 'Готовые стили',
-                        onPressed: widget.sending ? null : widget.onOpenStylePresets,
+                        onTap: widget.sending ? null : widget.onAttachPhoto,
                       ),
                       Expanded(
                         child: TextField(
                           controller: _controller,
                           minLines: 1,
-                          maxLines: 4,
+                          maxLines: 6,
+                          keyboardType: TextInputType.multiline,
                           textCapitalization: TextCapitalization.sentences,
-                          decoration: const InputDecoration(
-                            hintText: 'Опишите причёску или бороду…',
+                          style: const TextStyle(fontSize: 16, height: 1.35),
+                          decoration: InputDecoration(
+                            hintText: 'Опишите причёску или бороду',
+                            hintStyle: TextStyle(
+                              fontSize: 16,
+                              color: colors.onSurfaceVariant.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
                             filled: false,
+                            isDense: true,
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: 11,
+                            ),
                           ),
                         ),
                       ),
-                      widget.sending
-                          ? const Padding(
-                              padding: EdgeInsets.all(AppSpacing.md),
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : IconButton.filled(
-                              icon: const Icon(Icons.arrow_upward),
-                              onPressed: _handleSend,
-                            ),
+                      _BarIconButton(
+                        icon: Icons.auto_awesome_outlined,
+                        tooltip: 'Стили и пресеты',
+                        onTap: widget.sending
+                            ? null
+                            : widget.onOpenStylePresets,
+                      ),
+                      const SizedBox(width: 4),
+                      _SendButton(
+                        sending: widget.sending,
+                        enabled: _hasText,
+                        onSend: _handleSend,
+                        onCancel: widget.onCancel,
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                'ИИ может допускать ошибки',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.55),
+                ),
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AttachedPhotoPreview extends StatelessWidget {
+  final File photo;
+  final VoidCallback onRemove;
+
+  const _AttachedPhotoPreview({required this.photo, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          bottom: AppSpacing.sm,
+          left: AppSpacing.sm,
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Image.file(
+                photo,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: -7,
+              right: -7,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.inverseSurface,
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 14,
+                    color: colors.onInverseSurface,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BarIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+
+  const _BarIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Icon(
+              icon,
+              size: 22,
+              color: onTap == null
+                  ? colors.onSurfaceVariant.withValues(alpha: 0.4)
+                  : colors.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SendButton extends StatelessWidget {
+  final bool sending;
+  final bool enabled;
+  final VoidCallback onSend;
+  final VoidCallback? onCancel;
+
+  const _SendButton({
+    required this.sending,
+    required this.enabled,
+    required this.onSend,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    final Color background;
+    final Color foreground;
+    final IconData icon;
+    final VoidCallback? onTap;
+    final String tooltip;
+
+    if (sending) {
+      background = colors.errorContainer;
+      foreground = colors.onErrorContainer;
+      icon = Icons.stop_rounded;
+      onTap = onCancel;
+      tooltip = 'Остановить генерацию';
+    } else {
+      background = enabled
+          ? colors.primary
+          : colors.onSurface.withValues(alpha: 0.08);
+      foreground = enabled
+          ? colors.onPrimary
+          : colors.onSurfaceVariant.withValues(alpha: 0.45);
+      icon = Icons.arrow_upward_rounded;
+      onTap = enabled ? onSend : null;
+      tooltip = 'Отправить';
+    }
+
+    return Tooltip(
+      message: tooltip,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: background),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Icon(icon, size: 20, color: foreground),
+          ),
         ),
       ),
     );

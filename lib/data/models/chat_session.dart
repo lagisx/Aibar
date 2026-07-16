@@ -13,17 +13,16 @@ class ChatSession {
     required this.lastMessageAt,
   });
 
-  String get displayTitle => (title == null || title!.trim().isEmpty)
-      ? 'Новый чат'
-      : title!;
+  String get displayTitle =>
+      (title == null || title!.trim().isEmpty) ? 'Новый чат' : title!;
 
   factory ChatSession.fromMap(Map<String, dynamic> map) {
     return ChatSession(
       id: map['id'] as String,
       userId: map['user_id'] as String,
       title: map['title'] as String?,
-      createdAt: DateTime.parse(map['created_at'] as String),
-      lastMessageAt: DateTime.parse(map['last_message_at'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String).toLocal(),
+      lastMessageAt: DateTime.parse(map['last_message_at'] as String).toLocal(),
     );
   }
 }

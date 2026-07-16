@@ -4,15 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/error_translator.dart';
 import 'features/auth/controllers/auth_controller.dart';
-import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/chat/screens/chat_screen.dart';
-import 'features/consent/controllers/consent_controller.dart';
-import 'features/consent/screens/photo_consent_screen.dart';
+import 'features/favorites/screens/favorites_screen.dart';
 import 'features/generation_settings/screens/generation_settings_screen.dart';
+import 'features/onboarding/controllers/app_tour_controller.dart';
+import 'features/onboarding/screens/app_tour_screen.dart';
+import 'features/onboarding/screens/gender_selection_screen.dart';
+import 'features/onboarding/screens/onboarding_screen.dart';
+import 'features/profile/controllers/gender_controller.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/settings/controllers/theme_controller.dart';
-import 'features/settings/screens/settings_screen.dart';
+import 'features/splash/screens/splash_screen.dart';
 import 'features/subscription/screens/paywall_screen.dart';
 import 'routes/app_routes.dart';
 
@@ -21,27 +24,27 @@ class HairstyleAiApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeControllerProvider).valueOrNull ?? ThemeMode.system;
+    final themeMode =
+        ref.watch(themeControllerProvider).valueOrNull ?? ThemeMode.system;
 
     return MaterialApp(
-      title: 'AI Hairstyle',
+      title: 'VEGAS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      home: const RootGate(),
+      home: SplashScreen(nextBuilder: (_) => const RootGate()),
       routes: {
         AppRoutes.register: (_) => const RegisterScreen(),
         AppRoutes.paywall: (_) => const PaywallScreen(),
         AppRoutes.profile: (_) => const ProfileScreen(),
-        AppRoutes.settings: (_) => const SettingsScreen(),
         AppRoutes.generationSettings: (_) => const GenerationSettingsScreen(),
+        AppRoutes.favorites: (_) => const FavoritesScreen(),
       },
     );
   }
 }
 
-// не вошёл — логин, вошёл без согласия — экран согласия, иначе — чат
 class RootGate extends ConsumerWidget {
   const RootGate({super.key});
 
@@ -50,18 +53,71 @@ class RootGate extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
 
     if (user == null) {
-      return const LoginScreen();
+      return const OnboardingScreen();
     }
 
-    final consentAsync = ref.watch(consentControllerProvider);
-    return consentAsync.when(
-      data: (accepted) => accepted ? const ChatScreen() : const PhotoConsentScreen(),
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+    final genderAsync = ref.watch(genderControllerProvider);
+    return genderAsync.when(
+      data: (gender) =>
+          gender == null ? const GenderSelectionScreen() : const _AppTourGate(),
+      loading: () => const _LoadingGate(),
+      error: (error, stackTrace) => _ErrorGate(
+        errorContext: 'gender',
+        error: error,
+        stackTrace: stackTrace,
       ),
-      error: (error, stackTrace) => Scaffold(
-        body: Center(
-          child: Text(friendlyErrorMessage(error, context: 'consent', stackTrace: stackTrace)),
+    );
+  }
+}
+
+class _AppTourGate extends ConsumerWidget {
+  const _AppTourGate();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tourSeenAsync = ref.watch(appTourControllerProvider);
+    return tourSeenAsync.when(
+      data: (seen) => seen ? const ChatScreen() : const AppTourScreen(),
+      loading: () => const _LoadingGate(),
+      error: (error, stackTrace) => _ErrorGate(
+        errorContext: 'app_tour',
+        error: error,
+        stackTrace: stackTrace,
+      ),
+    );
+  }
+}
+
+class _LoadingGate extends StatelessWidget {
+  const _LoadingGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
+}
+
+class _ErrorGate extends StatelessWidget {
+  final String errorContext;
+  final Object error;
+  final StackTrace stackTrace;
+
+  const _ErrorGate({
+    required this.errorContext,
+    required this.error,
+    required this.stackTrace,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          friendlyErrorMessage(
+            error,
+            context: errorContext,
+            stackTrace: stackTrace,
+          ),
         ),
       ),
     );

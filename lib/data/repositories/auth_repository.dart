@@ -1,26 +1,25 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/config/app_constants.dart';
+import '../../core/utils/network_retry.dart';
 import '../services/supabase_service.dart';
 
 class AuthRepository {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   Stream<AuthState> get authStateChanges =>
       SupabaseService.client.auth.onAuthStateChange;
 
   User? get currentUser => SupabaseService.currentUser;
 
-  // true — если сессия уже активна (подтверждение почты выключено в проекте)
   Future<bool> signUpWithEmail({
     required String email,
     required String password,
   }) async {
-    final response = await SupabaseService.client.auth.signUp(
-      email: email,
-      password: password,
+    final response = await withRetry(
+      () =>
+          SupabaseService.client.auth.signUp(email: email, password: password),
     );
     return response.session != null;
   }
@@ -29,15 +28,17 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    await SupabaseService.client.auth.signInWithPassword(
-      email: email,
-      password: password,
+    await withRetry(
+      () => SupabaseService.client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      ),
     );
   }
 
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return; // user cancelled
+    if (googleUser == null) return;
 
     final googleAuth = await googleUser.authentication;
     final idToken = googleAuth.idToken;
@@ -54,8 +55,23 @@ class AuthRepository {
     );
   }
 
+  Future<void> resetPasswordForEmail(String email) async {
+    await SupabaseService.client.auth.resetPasswordForEmail(email);
+  }
+
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await SupabaseService.client.auth.signOut();
+  }
+
+  Future<void> deleteAccount() async {
+    final response = await SupabaseService.client.functions.invoke(
+      AppConstants.deleteAccountFunction,
+    );
+    if (response.status != 200) {
+      throw Exception('Не удалось удалить аккаунт: ${response.data}');
+    }
+    await _googleSignIn.signOut();
+    await SupabaseService.client.auth.signOut(scope: SignOutScope.local);
   }
 }

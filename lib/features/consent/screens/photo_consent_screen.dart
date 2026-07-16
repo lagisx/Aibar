@@ -4,13 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared_widgets/primary_button.dart';
 import '../controllers/consent_controller.dart';
 
-// без согласия на обработку фото в чат не пускаем
 class PhotoConsentScreen extends ConsumerStatefulWidget {
   const PhotoConsentScreen({super.key});
 
   @override
-  ConsumerState<PhotoConsentScreen> createState() =>
-      _PhotoConsentScreenState();
+  ConsumerState<PhotoConsentScreen> createState() => _PhotoConsentScreenState();
 }
 
 class _PhotoConsentScreenState extends ConsumerState<PhotoConsentScreen> {
@@ -26,8 +24,11 @@ class _PhotoConsentScreenState extends ConsumerState<PhotoConsentScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              Icon(Icons.photo_camera_outlined,
-                  size: 48, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.photo_camera_outlined,
+                size: 48,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Обработка фото',
@@ -44,8 +45,7 @@ class _PhotoConsentScreenState extends ConsumerState<PhotoConsentScreen> {
               const Spacer(),
               CheckboxListTile(
                 value: _checked,
-                onChanged: (value) =>
-                    setState(() => _checked = value ?? false),
+                onChanged: (value) => setState(() => _checked = value ?? false),
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
@@ -57,7 +57,8 @@ class _PhotoConsentScreenState extends ConsumerState<PhotoConsentScreen> {
               PrimaryButton(
                 label: 'Продолжить',
                 onPressed: _checked
-                    ? () => ref.read(consentControllerProvider.notifier).accept()
+                    ? () =>
+                          ref.read(consentControllerProvider.notifier).accept()
                     : null,
               ),
             ],

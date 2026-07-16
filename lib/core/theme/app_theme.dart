@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'app_tokens.dart';
 
 class AppTheme {
-  static const Color _seed = Color(0xFF6C4DF6);
+  static const Color _seed = Color(0xFF2F6FED);
 
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
@@ -19,6 +19,17 @@ class AppTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.surface,
+      textTheme: ThemeData(brightness: brightness).textTheme.copyWith(
+        headlineLarge: const TextStyle(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        headlineMedium: const TextStyle(
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        titleLarge: const TextStyle(fontWeight: FontWeight.w700),
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
@@ -27,7 +38,7 @@ class AppTheme {
         titleTextStyle: TextStyle(
           color: colorScheme.onSurface,
           fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -86,12 +97,12 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colorScheme.surface,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xl),
+          ),
         ),
       ),
-      drawerTheme: DrawerThemeData(
-        backgroundColor: colorScheme.surface,
-      ),
+      drawerTheme: DrawerThemeData(backgroundColor: colorScheme.surface),
     );
   }
 }

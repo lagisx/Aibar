@@ -21,19 +21,19 @@ class PlanCard extends StatelessWidget {
     required this.onSelect,
   });
 
+  IconData get _tierIcon => switch (tier) {
+    SubscriptionTier.free => Icons.person_outline,
+    SubscriptionTier.pro => Icons.star_outline,
+    SubscriptionTier.max => Icons.diamond_outlined,
+  };
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: isCurrent ? colors.primaryContainer.withValues(alpha: 0.25) : colors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: isCurrent ? colors.primary : Colors.transparent,
-          width: isCurrent ? 2 : 0,
-        ),
         boxShadow: [
           BoxShadow(
             color: colors.shadow.withValues(alpha: 0.05),
@@ -42,19 +42,57 @@ class PlanCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Material(
+        color: isCurrent
+            ? colors.primaryContainer.withValues(alpha: 0.25)
+            : colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          onTap: isCurrent ? null : onSelect,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: isCurrent ? colors.primary : Colors.transparent,
+                width: isCurrent ? 2 : 0,
+              ),
+            ),
+            child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Icon(_tierIcon, color: colors.primary),
+              const SizedBox(width: AppSpacing.sm),
               Text(title, style: Theme.of(context).textTheme.titleLarge),
+              if (tier == SubscriptionTier.pro) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: Text(
+                    'Популярный',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelSmall?.copyWith(color: colors.onPrimary),
+                  ),
+                ),
+              ],
               const Spacer(),
               Text(
                 price,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
@@ -72,20 +110,23 @@ class PlanCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: isCurrent
-                ? OutlinedButton(
-                    onPressed: null,
-                    child: const Text('Текущий тариф'),
-                  )
-                : FilledButton(
-                    onPressed: onSelect,
-                    child: const Text('Оформить'),
-                  ),
+                const SizedBox(height: AppSpacing.md),
+                SizedBox(
+                  width: double.infinity,
+                  child: isCurrent
+                      ? OutlinedButton(
+                          onPressed: null,
+                          child: const Text('Текущий тариф'),
+                        )
+                      : FilledButton(
+                          onPressed: onSelect,
+                          child: const Text('Оформить'),
+                        ),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -10,8 +11,10 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+        // flutter_local_notifications требует desugaring для java.time на старых API
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -24,7 +27,6 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
-    
 
     buildTypes {
         release {
@@ -35,12 +37,18 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-    }
-}
-
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+kotlin {
+    // современный DSL вместо deprecated kotlinOptions{} — на новых версиях
+    // Kotlin Gradle Plugin это предупреждение ломает сборку как ошибку
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
 }
