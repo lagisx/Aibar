@@ -33,44 +33,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     super.dispose();
   }
 
-  Future<void> _confirmClearAllChats(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Очистить все чаты?'),
-        content: const Text(
-          'Вся история переписки будет удалена безвозвратно.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              'Очистить',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    for (final timer in _pendingDeletes.values) {
-      timer.cancel();
-    }
-    _pendingDeletes.clear();
-
-    await ref.read(chatControllerProvider.notifier).clearAllChats();
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Все чаты удалены')));
-    }
-  }
-
   void _deleteWithUndo(String sessionId, String title) {
     _pendingDeletes[sessionId]?.cancel();
     setState(() {
@@ -157,23 +119,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                 AppSpacing.md,
                 AppSpacing.xs,
               ),
-              child: Row(
-                children: [
-                  const Expanded(child: _SectionLabel('Чаты')),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    onTap: () => _confirmClearAllChats(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        Icons.delete_sweep_outlined,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: const _SectionLabel('Чаты'),
             ),
             Expanded(
               child: sessionsAsync.when(

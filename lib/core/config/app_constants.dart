@@ -23,4 +23,6 @@ class AppConstants {
   static const String variantCountPrefsKey = 'variant_count_v1';
 
   static const String themeModePrefsKey = 'theme_mode_v1';
+
+  static const String photoConsentPrefsKey = 'photo_consent_v1';
 }

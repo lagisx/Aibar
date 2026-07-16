@@ -148,12 +148,6 @@ class _ScissorsPainter extends CustomPainter {
     required this.accent,
   });
 
-  // Fixed spread angle (radians) for the handles/rings. This is
-  // intentionally NOT tied to the animated blade `halfAngle`: the rings sit
-  // fairly close to the pivot, so if they opened/closed with the same small
-  // angle as the blades they'd overlap at low angles. Keeping the handle
-  // spread constant (and wide enough) guarantees the two rings never touch,
-  // no matter what the blades are doing.
   static const double _handleSpread = 0.34;
 
   @override
@@ -171,16 +165,12 @@ class _ScissorsPainter extends CustomPainter {
       ..strokeWidth = 5.5 * s
       ..strokeCap = StrokeCap.round;
 
-    // Lay the whole icon out horizontally (blades pointing sideways,
-    // handles/rings on the opposite side) instead of the original
-    // vertical orientation.
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.rotate(math.pi / 2);
     canvas.translate(-center.dx, -center.dy);
 
     void drawHalf(int dir) {
-      // Blade: animates with the snip angle.
       canvas.save();
       canvas.translate(pivot.dx, pivot.dy);
       canvas.rotate(halfAngle * dir);
@@ -193,7 +183,6 @@ class _ScissorsPainter extends CustomPainter {
       canvas.drawPath(blade, fill);
       canvas.restore();
 
-      // Handle + ring: fixed spread so the rings stay clear of each other.
       canvas.save();
       canvas.translate(pivot.dx, pivot.dy);
       canvas.rotate(_handleSpread * dir);
